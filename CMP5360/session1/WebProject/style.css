@@ -1,0 +1,122 @@
+
+body{
+    overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif;
+    height: 100%;
+    max-width: auto;
+    background-color: white;
+    margin: 0;
+}
+header{
+    background-color: #171133;
+    padding: 1px;
+    text-align: center;
+    font-size: 25px;
+    color: white;
+}
+nav{
+    float: center;
+    text-align: center;
+    height: 50px;
+    background-color: #382b7b;
+    padding: 1px;
+    
+}
+
+article{
+    background-image:url("resources/image/bg2.jpg") ;
+    float: center;
+    padding: 1px;
+    background-color: aqua;
+    min-height: 100%;
+    height: 76vh;
+    color: white;
+}
+
+section::after{
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.column{
+    float: center;
+
+    padding: 1px;
+}
+
+.column1{
+    margin: auto;
+    height: 400px;
+    width: 45%;
+    border: 1px solid rgb(0, 247, 255);
+    text-align: center;
+}
+.column2{
+    margin: 0%;
+    height: 200px;
+
+}
+.column3{
+
+    margin-left: 60%;
+    width: 35%;
+    height: 600px;
+    text-align: center;
+
+}
+.column4{
+
+    float: left;
+    margin-left: 5%;
+    width: 30%;
+    height: 450px;
+    text-align: center;
+
+}
+
+  
+
+.row:after{
+    content: "";
+    display: table;
+    clear: both;
+}
+  
+footer{
+    background-color: #171133;
+    padding: 1px;
+    text-align: center;
+    color: white;
+}
+
+.button{
+    border-radius: 0%;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    display: inline-block;
+    font-size: 16px;
+    margin: 5px 5px;
+    transition-duration: 0.2s;
+    cursor: pointer;
+    font-style: bold;
+}
+
+.button1{
+    background-color: #171133;
+    color: white;
+    border: 2px solid rgb(0, 247, 255);
+}
+
+.button1:hover{
+    background-color: #3b2e7e;
+    color: white;
+}
+
+img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}

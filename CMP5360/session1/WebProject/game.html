@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            Game page
+        </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="style.css" rel="stylesheet" type="text/css" />
+    </head>
+    
+
+    <body>
+    <header>
+        <h1>
+            My Game
+        </h1>
+    </header>
+    <section>
+        <nav>
+            
+            <button class="button button1" onclick="window.location.href='home.html'">Home page</button>
+            <button class="button button1" onclick="window.location.href='login.html'">Login page</button>
+            <button class="button button1" onclick="window.location.href='register.html'">Register page</button>
+            <button class="button button1" onclick="window.location.href='aboutme.html'">About page</button>
+            
+        </nav>
+
+
+        <article>   
+            <br>
+            <div class="row">
+                <br>
+                <div class="column column1" style="background-color: rgba(11, 75, 134, 0.5)" >
+
+
+                </div>
+            <h2>
+          
+            </h2>
+            <p id="myitem" class="content"> press button </p>
+            <button onclick="alert('It is clicked');">click me</button>
+    
+    
+            <p id="result">This is result</p>
+    
+            <script>
+                console.log("this is start of my first script")
+                document.getElementById("myitem").innerHTML = "my game is loading here. Please wait";
+            </script>
+    
+            <script src="script.js"></script>
+            <script type="module">
+                import message from "./message.js";
+                document.getElementById("result").innerHTML = message();
+    
+            </script>
+        </article>
+    </section>
+    <footer>
+        <p>© 2023-2024 Tamer Hussen Birmingham City University</p>
+    </footer>
+    </body>
+</html>
