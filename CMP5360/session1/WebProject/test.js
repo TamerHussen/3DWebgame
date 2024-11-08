@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'https://unpkg.com/three@0.169.0/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from "https://unpkg.com/three@0.169.0/examples/jsm/loaders/GLTFLoader.js";
+import Stats from 'https://unpkg.com/three@0.169.0/examples/jsm/libs/stats.module.js';
+
 
 let controls;
 let upstate = false;
@@ -48,12 +50,18 @@ document.getElementById('moveRightBtn').style.transform = 'translateX(10px)';
 // GLTF Loader for 3D Model
 const loader = new GLTFLoader();
 loader.setPath("resources/3dmodel/");
+let mesh;
+let clock = new THREE.Clock(); 
 
 // Animation mixer
 let mixer;
 
-// add clock
-let clock = new THREE.Clock(); 
+// add stats
+let stats;
+stats = new Stats();
+document.body.appendChild( stats.dom );
+
+
 
 // Scene and Camera Setup
 const scene = new THREE.Scene();
@@ -211,6 +219,7 @@ document.addEventListener('keyup', (event) => {
     }
 });
 
+
 // Animation Objects
 const cub1 = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: 0xff0000 }));
 scene.add(cub1);
@@ -222,6 +231,10 @@ scene.add(group2);
 
 // Animation Loop
 function animate() {
+
+    requestAnimationFrame( animate);
+    stats.update(); // update stats
+
     if (player) {
         // Player movement logic
         if (upstate) {
