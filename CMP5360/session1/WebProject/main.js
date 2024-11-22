@@ -70,14 +70,41 @@ const maxSpeed = 0.2;
 const acceleration = 0.01;
 const friction = 0.005;
 const keys = {};
+let score = 0; // Initialize score
+let previousZ = 0; // Track previous Z position of the car
+let startTime = Date.now(); // Timer start time
 
 window.addEventListener('keyup', (e) => (keys[e.key] = false));
 window.addEventListener('keydown', (e) => (keys[e.key] = true));
 
+// Scoreboard and Timer UI
+const scoreElement = document.createElement('div');
+scoreElement.style.position = 'absolute';
+scoreElement.style.top = '10px';
+scoreElement.style.left = '10px';
+scoreElement.style.color = 'white';
+scoreElement.style.fontSize = '24px';
+scoreElement.style.fontFamily = 'Arial, sans-serif';
+scoreElement.style.padding = '10px';
+scoreElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'; // Semi-transparent background for scoreboard
+scoreElement.style.borderRadius = '5px';
+scoreElement.innerText = 'Score: 0';
+document.body.appendChild(scoreElement);
+
+const timerElement = document.createElement('div');
+timerElement.style.position = 'absolute';
+timerElement.style.top = '10px';
+timerElement.style.right = '10px'; // Positioning timer on the top-right corner
+timerElement.style.color = 'white';
+timerElement.style.fontSize = '24px';
+timerElement.style.fontFamily = 'Arial, sans-serif';
+timerElement.style.padding = '10px';
+timerElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'; // Semi-transparent background for timer
+timerElement.style.borderRadius = '5px';
+timerElement.innerText = 'Time: 0.00';
+document.body.appendChild(timerElement);
 
 function moveCar() {
-
-    
     if (!car) return;
 
     // Forward and backward movement
@@ -86,7 +113,7 @@ function moveCar() {
 
     if (keys['w']) speed = Math.min(speed - acceleration, -maxSpeed);
     if (keys['s']) speed = Math.max(speed + acceleration, maxSpeed);
-    
+
     // Apply friction
     speed *= 1 - friction;
 
@@ -110,6 +137,27 @@ function moveCar() {
     camera.position.x = car.position.x - 10 * Math.sin(car.rotation.y);
     camera.position.z = car.position.z - 10 * Math.cos(car.rotation.y);
     camera.lookAt(car.position);
+
+    // Check if the car is moving forward or backward and update score accordingly
+    if (car.position.z < previousZ) {
+        // Car is moving backward, lose points
+        score -= Math.abs(speed) * 0.1; // Deduct points when moving backward
+    } else {
+        // Car is moving forward, gain points
+        score += Math.abs(speed) * 0.1; // Increment points when moving forward
+    }
+
+    // Store the current Z position as previous for the next frame
+    previousZ = car.position.z;
+
+    // Update score UI
+    scoreElement.innerText = `Score: ${Math.floor(score)}`;
+}
+
+// Timer update
+function updateTimer() {
+    const elapsedTime = (Date.now() - startTime) / 1000; // Time in seconds
+    timerElement.innerText = `Time: ${elapsedTime.toFixed(2)}`;
 }
 
 // Animation loop
@@ -122,6 +170,8 @@ function animate() {
     if (mixer) mixer.update(delta);
 
     moveCar();
+    updateTimer(); // Update timer every frame
+
     renderer.render(scene, camera);
 }
 

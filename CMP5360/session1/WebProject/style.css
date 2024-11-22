@@ -115,6 +115,21 @@ footer{
     color: white;
 }
 
+.button2 {
+    background-color: #171133;
+    color: white;
+    border: 2px solid rgb(0, 247, 255);
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    z-index: 100;
+}
+
+.button2:hover {
+    background-color: #3b2e7e;
+    color: white;
+}
+
 img {
     display: block;
     margin-left: auto;
