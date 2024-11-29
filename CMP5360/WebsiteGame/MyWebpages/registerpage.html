@@ -44,30 +44,63 @@
     </footer>
 
     <script>
-        document.getElementById('Register').addEventListener('submit', async (e) => {
-            e.preventDefault();  // Prevent the default form submission
-
+        document.getElementById('Register').addEventListener('submit', (e) => {
+            e.preventDefault(); // Prevent the default form submission
+    
             // Collect form data
             const email = document.getElementById('Email').value;
             const username = document.getElementById('Username').value;
             const password = document.getElementById('Password').value;
-
-            // Send data to the server
-            const response = await fetch('/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, username, password })
-            });
-
-            if (response.ok) {
-                alert('User registered successfully!');
-                window.location.href = 'loginpage.html';  // Redirect to the login page after successful registration
-            } else {
-                alert('Registration failed.');
+    
+            if (!email || !username || !password) {
+                alert('All fields are required');
+                return;
             }
+    
+            // Get users from localStorage or initialize an empty array
+            let users = JSON.parse(localStorage.getItem('users')) || [];
+            
+            // Check if the email or username already exists
+            const userExists = users.some(user => user.Email === email || user.Username === username);
+            if (userExists) {
+                alert('User with this email or username already exists');
+                return;
+            }
+    
+            // Generate a new user ID
+            const newUserID = users.length > 0 ? users[users.length - 1].userID + 1 : 1;
+    
+            // Create new user object
+            const newUser = {
+                Email: email,
+                Username: username,
+                Password: password,
+                userID: newUserID
+            };
+    
+            // Add the new user to the users array and save to localStorage
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+    
+            // Create a JSON file and download it
+            downloadJSON(users, 'database.json');
+    
+            alert('User registered successfully');
+            window.location.href = 'loginpage.html'; // Redirect to the login page
         });
+    
+        function downloadJSON(data, filename) {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
     </script>
+    
+    
+    
 </body>
 </html>

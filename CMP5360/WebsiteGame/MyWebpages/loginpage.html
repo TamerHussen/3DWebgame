@@ -1,18 +1,14 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>
-            Login page
-        </title>
+        <title>Login page</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="style.css" rel="stylesheet" type="text/css" />
     </head>
 
     <body>
         <header>
-            <h1>
-                Login
-            </h1>
+            <h1>Login</h1>
         </header>
         <section>
             <nav>
@@ -25,15 +21,12 @@
             </nav>
             <article>   
                 <div class="row">
-                    <br>
-                    <br>
+                    <br><br>
                     <div class="column column1" style="background-color: rgba(11, 75, 134, 0.5)">
-
                         <header style="background-color: rgba(17, 11, 33, 0.5)">
                             <p1 style="font-size: 45px;"><div>Enter Login</div></p1>
                         </header>
-                        
-                        <form id="loginForm" action="/loginform">
+                        <form id="loginForm">
                             <br>
                             <p1 style="font-size: 40px;"><label for="username">Username:</label></p1>
                             <p1 style="font-size: 40px;">
@@ -49,34 +42,36 @@
                         </form> 
                     </div>
                 </div>
-                <script>
-                    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-                        e.preventDefault();
-
-                        const username = document.getElementById('username').value;
-                        const password = document.getElementById('password').value;
-
-                        const response = await fetch('/login', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ username, password })
-                        });
-
-                        if (response.ok) {
-                            alert('Login successful');
-                            window.location.href = 'homepage.html'; // Redirect to the homepage or dashboard
-                        } else {
-                            const errorMessage = await response.text();
-                            alert('Login failed: ' + errorMessage);
-                        }
-                    });
-                </script>
             </article>
         </section>
         <footer>
             <p>© 2023-2024 Tamer Hussen Birmingham City University</p>
         </footer>
+
+        <script>
+            document.getElementById('loginForm').addEventListener('submit', (e) => {
+                e.preventDefault(); // Prevent the default form submission
+        
+                // Collect form data
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+        
+                if (!username || !password) {
+                    alert('All fields are required');
+                    return;
+                }
+        
+                // Get users from localStorage
+                let users = JSON.parse(localStorage.getItem('users')) || [];
+                const user = users.find(u => u.Username === username && u.Password === password);
+        
+                if (user) {
+                    alert('Login successful');
+                    window.location.href = 'homepage.html'; // Redirect to homepage after successful login
+                } else {
+                    alert('Invalid username or password');
+                }
+            });
+        </script>
     </body>
 </html>

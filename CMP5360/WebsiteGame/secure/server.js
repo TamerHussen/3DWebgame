@@ -1,5 +1,5 @@
 const express = require('express');
-const mysql = require('mysql2');
+const fs = require('fs');
 const path = require('path');
 
 const app = express();
@@ -8,26 +8,8 @@ const PORT = process.env.PORT || 3000;
 // Middleware to parse JSON
 app.use(express.json());
 
-// Create a MySQL connection pool
-const db = mysql.createPool({
-    host: 'localhost',
-    user: 'my_user', // Replace with your MySQL username
-    password: 'my_password', // Replace with your MySQL password
-    database: 'my_database'
-});
-
-// Test database connection
-db.getConnection((err, connection) => {
-    if (err) {
-        console.error('Error connecting to the database:', err);
-        return;
-    }
-    console.log('Connected to the MySQL database');
-    connection.release();
-});
-
-// Serve static files (e.g., HTML, CSS, JavaScript) from the 'public' directory
-app.use(express.static(path.join(__dirname, 'public')));
+// Path to the JSON file
+const dbFilePath = path.join(__dirname, 'database.json');
 
 // Route to handle user registration
 app.post('/registerform', (req, res) => {
@@ -37,14 +19,35 @@ app.post('/registerform', (req, res) => {
         return res.status(400).send('All fields are required');
     }
 
-    // SQL query to insert a new user
-    const query = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
-    db.query(query, [username, email, password], (err, result) => {
+    // Read current data from database.json
+    fs.readFile(dbFilePath, (err, data) => {
         if (err) {
-            console.error('Error inserting user:', err);
+            console.error('Error reading database:', err);
             return res.status(500).send('Server error');
         }
-        res.status(201).send('User registered successfully');
+
+        let users = JSON.parse(data);
+        const newUserID = users.length > 0 ? users[users.length - 1].userID + 1 : 1;
+
+        // Check if the email or username already exists
+        const userExists = users.some(user => user.Email === email || user.Username === username);
+        if (userExists) {
+            return res.status(409).send('User with this email or username already exists');
+        }
+
+        // Add the new user
+        const newUser = { Email: email, Username: username, Password: password, userID: newUserID };
+        users.push(newUser);
+
+        // Write updated data back to database.json
+        fs.writeFile(dbFilePath, JSON.stringify(users, null, 4), (err) => {
+            if (err) {
+                console.error('Error writing to database:', err);
+                return res.status(500).send('Server error');
+            }
+
+            res.status(201).send('User registered successfully');
+        });
     });
 });
 
@@ -56,15 +59,17 @@ app.post('/loginform', (req, res) => {
         return res.status(400).send('All fields are required');
     }
 
-    // SQL query to check if the username and password match
-    const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
-    db.query(query, [username, password], (err, results) => {
+    // Read current data from database.json
+    fs.readFile(dbFilePath, (err, data) => {
         if (err) {
-            console.error('Error during login:', err);
+            console.error('Error reading database:', err);
             return res.status(500).send('Server error');
         }
 
-        if (results.length > 0) {
+        const users = JSON.parse(data);
+        const user = users.find(u => u.Username === username && u.Password === password);
+
+        if (user) {
             res.status(200).send('Login successful');
         } else {
             res.status(401).send('Invalid username or password');
