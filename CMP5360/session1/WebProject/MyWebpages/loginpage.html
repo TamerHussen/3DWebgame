@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            Login page
+        </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="style.css" rel="stylesheet" type="text/css" />
+    </head>
+
+    <body>
+        <header>
+            <h1>
+                Login
+            </h1>
+        </header>
+        <section>
+            <nav>
+                <button class="button button1" onclick="window.location.href='homepage.html'">Home page</button>
+                <button class="button button1" onclick="window.location.href='gamepage.html'">Game page</button>
+                <button class="button button1" onclick="window.location.href='loginpage.html'">Login page</button>
+                <button class="button button1" onclick="window.location.href='registerpage.html'">Register page</button>
+                <button class="button button1" onclick="window.location.href='aboutmepage.html'">About page</button>
+                <button class="button button1" onclick="window.location.href='404Page.html'">404 page</button>
+            </nav>
+            <article>   
+                <div class="row">
+                    <br>
+                    <br>
+                    <div class="column column1" style="background-color: rgba(11, 75, 134, 0.5)">
+
+                        <header style="background-color: rgba(17, 11, 33, 0.5)">
+                            <p1 style="font-size: 45px;"><div>Enter Login</div></p1>
+                        </header>
+                        
+                        <form id="loginForm" action="/loginform">
+                            <br>
+                            <p1 style="font-size: 40px;"><label for="username">Username:</label></p1>
+                            <p1 style="font-size: 40px;">
+                                <input style="height: 25px; margin-left: 10px; position: relative; top: -6px;" 
+                                    type="text" id="username" name="username" required>
+                            </p1><br><br>
+                            <p1 style="font-size: 40px;"><label for="password">Password:</label></p1>
+                            <p1 style="font-size: 40px;">
+                                <input style="height: 25px; margin-left: 10px; position: relative; top: -6px;" 
+                                    type="password" id="password" name="password" required>
+                            </p1><br><br>
+                            <input style="font-size: 20px; height: 50px; width: 100px;" type="submit" value="Submit">
+                        </form> 
+                    </div>
+                </div>
+                <script>
+                    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+
+                        const username = document.getElementById('username').value;
+                        const password = document.getElementById('password').value;
+
+                        const response = await fetch('/login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ username, password })
+                        });
+
+                        if (response.ok) {
+                            alert('Login successful');
+                            window.location.href = 'homepage.html'; // Redirect to the homepage or dashboard
+                        } else {
+                            const errorMessage = await response.text();
+                            alert('Login failed: ' + errorMessage);
+                        }
+                    });
+                </script>
+            </article>
+        </section>
+        <footer>
+            <p>© 2023-2024 Tamer Hussen Birmingham City University</p>
+        </footer>
+    </body>
+</html>
