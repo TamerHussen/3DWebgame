@@ -1,37 +1,74 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>
-            404 page
-        </title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="style.css" rel="stylesheet" type="text/css" />
-    </head>
-    
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found</title>
+    <link href="style.css" rel="stylesheet" type="text/css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #171133;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            color: #333;
+        }
 
-    <body>
-        <header>
-        <h1>
-            Error
-        </h1>
-        </header>
-        <section>
-            <nav>
-                <button class="button button1" onclick="window.location.href='homepage.html'">Home page</button>
-                <button class="button button1" onclick="window.location.href='gamepage.html'">Game page</button>
-                <button class="button button1" onclick="window.location.href='loginpage.html'">Login page</button>
-                <button class="button button1" onclick="window.location.href='registerpage.html'">Register page</button>
-                <button class="button button1" onclick="window.location.href='aboutmepage.html'">About page</button>
-                <button class="button button1" onclick="window.location.href='404Page.html'">404 page</button>
-                
-            </nav>
-        <article>  
+        h1 {
+            font-size: 5em;
+            margin: 0;
+            color: red;
+        }
+        p {
+            color: white;
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+        .button{
+            border-radius: 0%;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            display: inline-block;
+            font-size: 16px;
+            margin: 5px 5px;
+            transition-duration: 0.2s;
+            cursor: pointer;
+            font-style: bold;
+        }
 
+        .button3{
+            background-color: #171133;
+            color: white;
+            border: 2px solid rgb(17, 0, 27);
+        }
 
-        </article>  
-        </section>
-        <footer>
-            <p>© 2023-2024 Tamer Hussen Birmingham City University</p>
-        </footer>
-    </body>
+        .button3:hover{
+            background-color: #251b50;
+            color: white;
+        }
+        footer {
+            position: absolute;
+            background-color: #171133;
+            bottom: 10px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>404 Error</h1>
+        <p>The page you are looking for does not exist.</p>
+        <button class="button button3" onclick="window.location.href='homepage.html'">go back to home page</button>
+    </header>
+    <footer>
+        <p> © 2023-2024 Tamer Hussen Birmingham City University</p>
+    </footer>
+</body>
 </html>

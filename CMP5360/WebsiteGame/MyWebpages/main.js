@@ -19,22 +19,39 @@ scene.add(light);
 const createSkybox = () => {
     const loader = new THREE.TextureLoader();
     loader.load("resources/image/Forest.jpg", (texture) => {
-        const sphereGeometry = new THREE.SphereGeometry(500, 500, 500);
-        const sphereMaterial = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+        const sphereGeometry = new THREE.SphereGeometry(500, 64, 64);
+        const sphereMaterial = new THREE.MeshBasicMaterial({
+            map: texture,
+            side: THREE.BackSide,
+        });
         const skybox = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        skybox.rotation.y = Math.PI;
         scene.add(skybox);
     });
 };
 createSkybox();
 
 // Road and boundaries
-const roadGeometry = new THREE.PlaneGeometry(20, 200);
-const roadMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 });
+const roadGeometry = new THREE.PlaneGeometry(20, 500); // Extend road length for infinite effect
+const roadTexture = new THREE.TextureLoader().load('resources/image/road.jpg');
+roadTexture.wrapS = THREE.RepeatWrapping;
+roadTexture.wrapT = THREE.RepeatWrapping;
+roadTexture.repeat.set(1, 50);
+
+const roadMaterial = new THREE.MeshBasicMaterial({ map: roadTexture });
 const road = new THREE.Mesh(roadGeometry, roadMaterial);
 road.rotation.x = -Math.PI / 2;
 scene.add(road);
 
-const boundaryGeometry = new THREE.BoxGeometry(1, 1, 200);
+let roadOffset = 0; // Offset for texture movement
+
+function animateRoad() {
+    roadOffset += speed * 0.1;
+    roadTexture.offset.y = roadOffset % 1; // Loop the texture
+}
+
+// Boundaries
+const boundaryGeometry = new THREE.BoxGeometry(1, 1, 500);
 const boundaryMaterial = new THREE.MeshBasicMaterial({ color: 0x444444, wireframe: true });
 
 const leftBoundary = new THREE.Mesh(boundaryGeometry, boundaryMaterial);
@@ -44,15 +61,46 @@ leftBoundary.position.set(-10, 0.5, 0);
 rightBoundary.position.set(10, 0.5, 0);
 scene.add(leftBoundary, rightBoundary);
 
+// Obstacles
+const obstacleGeometry = new THREE.BoxGeometry(1, 1, 1);
+const obstacleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+const obstacles = [];
+
+// generate the obstacles on the road
+function generateObstacles() {
+    for (let i = 0; i < 10; i++) {
+        const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+        obstacle.position.set(
+            (Math.random() * 16) - 8,
+            0.5, -Math.random() * 500
+        );
+        scene.add(obstacle);
+        obstacles.push(obstacle);
+    }
+}
+
+generateObstacles();
+
+function moveObstacles() {
+    obstacles.forEach((obstacle) => {
+        obstacle.position.z += speed;
+        if (obstacle.position.z > 5) {
+            obstacle.position.z = -500;
+            obstacle.position.x = (Math.random() * 16) - 8;
+        }
+    });
+}
+
 // GLTF Loader for car model
 const loader = new GLTFLoader();
 let car, mixer;
 loader.load(
-    "resources/3dmodel/TestCar.glb", // Replace with the actual model path
+    "resources/3dmodel/TestCar.glb",
     (gltf) => {
         car = gltf.scene;
         car.scale.set(0.2, 0.2, 0.2);
         car.position.y = 0.25;
+        car.rotation.y = Math.PI;
         scene.add(car);
 
         mixer = new THREE.AnimationMixer(car);
@@ -60,103 +108,74 @@ loader.load(
             mixer.clipAction(clip).play();
         });
     },
-    (xhr) => console.log((xhr.loaded / xhr.total * 100) + '% loaded'),
+    undefined,
     (error) => console.error("Error loading model:", error)
 );
 
 // Movement variables and logic
 let speed = 0;
-const maxSpeed = 0.2;
+const maxSpeed = 10.2;
 const acceleration = 0.01;
 const friction = 0.005;
 const keys = {};
-let score = 0; // Initialize score
-let previousZ = 0; // Track previous Z position of the car
-let startTime = Date.now(); // Timer start time
+let score = 0;
+let startTime = Date.now();
 
 window.addEventListener('keyup', (e) => (keys[e.key] = false));
 window.addEventListener('keydown', (e) => (keys[e.key] = true));
 
 // Scoreboard and Timer UI
 const scoreElement = document.createElement('div');
-scoreElement.style.position = 'absolute';
-scoreElement.style.top = '10px';
-scoreElement.style.left = '10px';
-scoreElement.style.color = 'white';
-scoreElement.style.fontSize = '24px';
-scoreElement.style.fontFamily = 'Arial, sans-serif';
-scoreElement.style.padding = '10px';
-scoreElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'; // Semi-transparent background for scoreboard
-scoreElement.style.borderRadius = '5px';
+scoreElement.style.cssText = "position: absolute; top: 10px; left: 10px; color: white; font-size: 24px; font-family: Arial; background: rgba(0, 0, 0, 0.7); padding: 10px; border-radius: 5px;";
 scoreElement.innerText = 'Score: 0';
 document.body.appendChild(scoreElement);
 
 const timerElement = document.createElement('div');
-timerElement.style.position = 'absolute';
-timerElement.style.top = '10px';
-timerElement.style.right = '10px'; // Positioning timer on the top-right corner
-timerElement.style.color = 'white';
-timerElement.style.fontSize = '24px';
-timerElement.style.fontFamily = 'Arial, sans-serif';
-timerElement.style.padding = '10px';
-timerElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'; // Semi-transparent background for timer
-timerElement.style.borderRadius = '5px';
+timerElement.style.cssText = "position: absolute; top: 10px; right: 10px; color: white; font-size: 24px; font-family: Arial; background: rgba(0, 0, 0, 0.7); padding: 10px; border-radius: 5px;";
 timerElement.innerText = 'Time: 0.00';
 document.body.appendChild(timerElement);
 
 function moveCar() {
     if (!car) return;
 
-    // Forward and backward movement
-    if (keys['ArrowUp']) speed = Math.min(speed - acceleration, -maxSpeed);
-    if (keys['ArrowDown']) speed = Math.max(speed + acceleration, maxSpeed);
+    // Adjust speed based on key presses
+    if (keys['ArrowUp'] || keys['w']) speed = Math.min(speed + acceleration, maxSpeed);
+    if (keys['ArrowDown'] || keys['s']) speed = Math.max(speed - acceleration, 0);
 
-    if (keys['w']) speed = Math.min(speed - acceleration, -maxSpeed);
-    if (keys['s']) speed = Math.max(speed + acceleration, maxSpeed);
+    speed *= 1 - friction; // Apply friction
 
-    // Apply friction
-    speed *= 1 - friction;
+    // Move car side to side
+    if (keys['ArrowLeft'] || keys['a']) car.position.x = Math.max(car.position.x - 0.3, -8);
+    if (keys['ArrowRight'] || keys['d']) car.position.x = Math.min(car.position.x + 0.3, 8);
 
-    // Left and right rotation
-    if (keys['ArrowLeft']) car.rotation.y += 0.05;
-    if (keys['ArrowRight']) car.rotation.y -= 0.05;
+    // Simulate forward motion by moving obstacles and road
+    obstacles.forEach((obstacle) => {
+        obstacle.position.z += speed;
+        if (obstacle.position.z > 5) {
+            obstacle.position.z = -500;
+            obstacle.position.x = (Math.random() * 16) - 8;
+        }
+    });
 
-    if (keys['a']) car.rotation.y += 0.05;
-    if (keys['d']) car.rotation.y -= 0.05;
-
-    // Move the car
-    car.position.z -= speed * Math.cos(car.rotation.y);
-    car.position.x -= speed * Math.sin(car.rotation.y);
-
-    // Boundary checks
-    if (car.position.x < -9 || car.position.x > 9) {
-        speed = 0; // Stop car if it hits the boundary
-    }
-
-    // Update camera to follow the car
-    camera.position.x = car.position.x - 10 * Math.sin(car.rotation.y);
-    camera.position.z = car.position.z - 10 * Math.cos(car.rotation.y);
+    // Update camera position relative to the stationary car
+    camera.position.set(car.position.x, car.position.y + 5, car.position.z + 10);
     camera.lookAt(car.position);
 
-    // Check if the car is moving forward or backward and update score accordingly
-    if (car.position.z < previousZ) {
-        // Car is moving backward, lose points
-        score -= Math.abs(speed) * 0.1; // Deduct points when moving backward
-    } else {
-        // Car is moving forward, gain points
-        score += Math.abs(speed) * 0.1; // Increment points when moving forward
-    }
+    // Check for collisions with obstacles
+    obstacles.forEach((obstacle) => {
+        if (car.position.distanceTo(obstacle.position) < 1.5) {
+            speed = Math.max(speed - 0.05, 0); // Slow down on collision
+        }
+    });
 
-    // Store the current Z position as previous for the next frame
-    previousZ = car.position.z;
-
-    // Update score UI
+    // Update score
+    score += speed * 10;
     scoreElement.innerText = `Score: ${Math.floor(score)}`;
 }
 
-// Timer update
+
 function updateTimer() {
-    const elapsedTime = (Date.now() - startTime) / 1000; // Time in seconds
+    const elapsedTime = (Date.now() - startTime) / 1000;
     timerElement.innerText = `Time: ${elapsedTime.toFixed(2)}`;
 }
 
@@ -164,16 +183,15 @@ function updateTimer() {
 const clock = new THREE.Clock();
 function animate() {
     requestAnimationFrame(animate);
-
-    // Update mixer for car animations
     const delta = clock.getDelta();
     if (mixer) mixer.update(delta);
 
     moveCar();
-    updateTimer(); // Update timer every frame
+    moveObstacles();
+    animateRoad();
+    updateTimer();
 
     renderer.render(scene, camera);
 }
 
 animate();
-

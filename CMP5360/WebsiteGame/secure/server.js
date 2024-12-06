@@ -11,6 +11,9 @@ app.use(express.json());
 // Path to the JSON file
 const dbFilePath = path.join(__dirname, 'database.json');
 
+// Serve static files from MyWebpages directory
+app.use(express.static(path.join(__dirname, '../MyWebpages')));
+
 // Route to handle user registration
 app.post('/registerform', (req, res) => {
     const { username, email, password } = req.body;
@@ -75,6 +78,11 @@ app.post('/loginform', (req, res) => {
             res.status(401).send('Invalid username or password');
         }
     });
+});
+
+// Catch-all route for 404 errors
+app.use((req, res) => {
+    res.status(404).sendFile(path.join(__dirname, '../MyWebpages/404Page.html'));
 });
 
 // Start the server
