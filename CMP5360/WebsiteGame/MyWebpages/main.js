@@ -32,7 +32,7 @@ const createSkybox = () => {
 createSkybox();
 
 // Road and boundaries
-const roadGeometry = new THREE.PlaneGeometry(20, 500); // Extend road length for infinite effect
+const roadGeometry = new THREE.PlaneGeometry(20, 500);
 const roadTexture = new THREE.TextureLoader().load('resources/image/road.jpg');
 roadTexture.wrapS = THREE.RepeatWrapping;
 roadTexture.wrapT = THREE.RepeatWrapping;
@@ -63,7 +63,7 @@ scene.add(leftBoundary, rightBoundary);
 
 // Obstacles
 const obstacleGeometry = new THREE.BoxGeometry(1, 1, 1);
-const obstacleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+const obstacleMaterial = new THREE.MeshBasicMaterial({ color: 0xff9900 });
 const obstacles = [];
 
 // generate the obstacles on the road
