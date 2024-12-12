@@ -11,6 +11,13 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+// Handle window resize
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
 // Lighting
 const light = new THREE.DirectionalLight(0xffffff, 0.5);
 scene.add(light);
@@ -43,7 +50,7 @@ const road = new THREE.Mesh(roadGeometry, roadMaterial);
 road.rotation.x = -Math.PI / 2;
 scene.add(road);
 
-let roadOffset = 0; // Offset for texture movement
+let roadOffset = 0;
 
 function animateRoad() {
     roadOffset += speed * 0.1;
@@ -63,30 +70,40 @@ scene.add(leftBoundary, rightBoundary);
 
 // Obstacles
 const obstacleGeometry = new THREE.BoxGeometry(1, 1, 1);
-const obstacleMaterial = new THREE.MeshBasicMaterial({ color: 0xff9900 });
-const obstacles = [];
+const orangeMaterial = new THREE.MeshBasicMaterial({ color: 0xff9900 });
+const redMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 
-// generate the obstacles on the road
+const orangeCubes = [];
+const redCubes = [];
+
 function generateObstacles() {
-    for (let i = 0; i < 10; i++) {
-        const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
-        obstacle.position.set(
+    for (let i = 0; i < 5; i++) {
+        const orangeCube = new THREE.Mesh(obstacleGeometry, orangeMaterial);
+        orangeCube.position.set(
             (Math.random() * 16) - 8,
             0.5, -Math.random() * 500
         );
-        scene.add(obstacle);
-        obstacles.push(obstacle);
+        scene.add(orangeCube);
+        orangeCubes.push(orangeCube);
+
+        const redCube = new THREE.Mesh(obstacleGeometry, redMaterial);
+        redCube.position.set(
+            (Math.random() * 16) - 8,
+            0.5, -Math.random() * 500
+        );
+        scene.add(redCube);
+        redCubes.push(redCube);
     }
 }
 
 generateObstacles();
 
-function moveObstacles() {
-    obstacles.forEach((obstacle) => {
-        obstacle.position.z += speed;
-        if (obstacle.position.z > 5) {
-            obstacle.position.z = -500;
-            obstacle.position.x = (Math.random() * 16) - 8;
+function moveCubes(cubes) {
+    cubes.forEach((cube) => {
+        cube.position.z += speed;
+        if (cube.position.z > 5) {
+            cube.position.z = -500;
+            cube.position.x = (Math.random() * 16) - 8;
         }
     });
 }
@@ -121,6 +138,9 @@ const keys = {};
 let score = 0;
 let startTime = Date.now();
 
+let lastCarPosition = { x: 0, z: 0 };
+let stationaryStartTime = null;
+
 window.addEventListener('keyup', (e) => (keys[e.key] = false));
 window.addEventListener('keydown', (e) => (keys[e.key] = true));
 
@@ -148,31 +168,42 @@ function moveCar() {
     if (keys['ArrowLeft'] || keys['a']) car.position.x = Math.max(car.position.x - 0.3, -8);
     if (keys['ArrowRight'] || keys['d']) car.position.x = Math.min(car.position.x + 0.3, 8);
 
-    // Simulate forward motion by moving obstacles and road
-    obstacles.forEach((obstacle) => {
-        obstacle.position.z += speed;
-        if (obstacle.position.z > 5) {
-            obstacle.position.z = -500;
-            obstacle.position.x = (Math.random() * 16) - 8;
+    // Check for collisions with orange and red cubes
+    orangeCubes.forEach((cube) => {
+        if (car.position.distanceTo(cube.position) < 1.5) {
+            speed = Math.max(speed - 0.5, 0);
+            cube.position.z = -500;
         }
     });
+
+    redCubes.forEach((cube) => {
+        if (car.position.distanceTo(cube.position) < 1.5) {
+            speed = 0;
+            cube.position.z = -500;
+        }
+    });
+
+    // Handle stationary state for score deduction
+    if (car.position.x === lastCarPosition.x && car.position.z === lastCarPosition.z) {
+        if (stationaryStartTime === null) {
+            stationaryStartTime = Date.now();
+        } else if (Date.now() - stationaryStartTime > 2000) {
+            score -= 1;
+        }
+    } else {
+        stationaryStartTime = null;
+    }
+
+    lastCarPosition = { x: car.position.x, z: car.position.z };
 
     // Update camera position relative to the stationary car
     camera.position.set(car.position.x, car.position.y + 5, car.position.z + 10);
     camera.lookAt(car.position);
 
-    // Check for collisions with obstacles
-    obstacles.forEach((obstacle) => {
-        if (car.position.distanceTo(obstacle.position) < 1.5) {
-            speed = Math.max(speed - 0.05, 0); // Slow down on collision
-        }
-    });
-
     // Update score
     score += speed * 10;
     scoreElement.innerText = `Score: ${Math.floor(score)}`;
 }
-
 
 function updateTimer() {
     const elapsedTime = (Date.now() - startTime) / 1000;
@@ -187,7 +218,8 @@ function animate() {
     if (mixer) mixer.update(delta);
 
     moveCar();
-    moveObstacles();
+    moveCubes(orangeCubes);
+    moveCubes(redCubes);
     animateRoad();
     updateTimer();
 
