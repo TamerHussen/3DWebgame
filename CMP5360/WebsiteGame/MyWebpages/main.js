@@ -2,6 +2,26 @@ import * as THREE from 'three';
 import { OrbitControls } from 'https://unpkg.com/three@0.169.0/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'https://unpkg.com/three@0.169.0/examples/jsm/loaders/GLTFLoader.js';
 
+// Create a loading screen
+const loadingScreen = document.createElement('div');
+loadingScreen.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #171133;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 48px;
+    font-family: Arial;
+    z-index: 1000;
+`;
+loadingScreen.innerText = "Starting game...";
+document.body.appendChild(loadingScreen);
+
 // Set up scene, camera, and renderer
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -22,25 +42,47 @@ window.addEventListener('resize', () => {
 const light = new THREE.DirectionalLight(0xffffff, 0.5);
 scene.add(light);
 
+// Asset loading tracker
+let assetsToLoad = 2; // Number of assets to track
+let assetsLoaded = 0;
+
+function checkLoadingComplete() {
+    assetsLoaded++;
+    if (assetsLoaded >= assetsToLoad) {
+        loadingScreen.style.display = 'none'; // Hide the loading screen
+    }
+}
+
 // Load a skybox
 const createSkybox = () => {
     const loader = new THREE.TextureLoader();
-    loader.load("resources/image/Forest.jpg", (texture) => {
-        const sphereGeometry = new THREE.SphereGeometry(500, 64, 64);
-        const sphereMaterial = new THREE.MeshBasicMaterial({
-            map: texture,
-            side: THREE.BackSide,
-        });
-        const skybox = new THREE.Mesh(sphereGeometry, sphereMaterial);
-        skybox.rotation.y = Math.PI;
-        scene.add(skybox);
-    });
+    loader.load(
+        "resources/image/Forest.jpg",
+        (texture) => {
+            const sphereGeometry = new THREE.SphereGeometry(500, 64, 64);
+            const sphereMaterial = new THREE.MeshBasicMaterial({
+                map: texture,
+                side: THREE.BackSide,
+            });
+            const skybox = new THREE.Mesh(sphereGeometry, sphereMaterial);
+            skybox.rotation.y = Math.PI;
+            scene.add(skybox);
+            checkLoadingComplete(); // Mark as loaded
+        },
+        undefined,
+        (error) => console.error("Error loading skybox texture:", error)
+    );
 };
 createSkybox();
 
 // Road and boundaries
 const roadGeometry = new THREE.PlaneGeometry(20, 500);
-const roadTexture = new THREE.TextureLoader().load('resources/image/road.jpg');
+const roadTexture = new THREE.TextureLoader().load(
+    'resources/image/road.jpg',
+    () => checkLoadingComplete(), // Mark road texture as loaded
+    undefined,
+    (error) => console.error("Error loading road texture:", error)
+);
 roadTexture.wrapS = THREE.RepeatWrapping;
 roadTexture.wrapT = THREE.RepeatWrapping;
 roadTexture.repeat.set(1, 50);
@@ -124,6 +166,8 @@ loader.load(
         gltf.animations.forEach((clip) => {
             mixer.clipAction(clip).play();
         });
+
+        checkLoadingComplete(); // Mark car model as loaded
     },
     undefined,
     (error) => console.error("Error loading model:", error)
