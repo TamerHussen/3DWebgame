@@ -1,5 +1,5 @@
 const express = require('express');
-const fs = require('fs');
+const mysql = require('mysql2');
 const path = require('path');
 
 const app = express();
@@ -8,10 +8,25 @@ const PORT = process.env.PORT || 3000;
 // Middleware to parse JSON
 app.use(express.json());
 
-// Path to the JSON file
-const dbFilePath = path.join(__dirname, 'database.json');
+// MySQL database connection
+const db = mysql.createConnection({
+  host: 'localhost',        // MySQL host (usually localhost)
+  user: 'root',             // Your MySQL username (root if using default setup)
+  password: '',             // Your MySQL password (empty if no password)
+  database: 'thu_database'  // Name of your database
+});
 
-// Serve static files from MyWebpages directory
+// Connect to the MySQL database
+db.connect((err) => {
+  if (err) {
+    console.error('Error connecting to the database:', err);
+    return;
+  }
+  console.log('Connected to the MySQL database');
+});
+
+// Serve static files from the MyWebpages directory
+// Adjusting the path to point to your MyWebpages directory, which is outside of this folder
 app.use(express.static(path.join(__dirname, '../MyWebpages')));
 
 // Route to handle user registration
@@ -22,30 +37,22 @@ app.post('/registerform', (req, res) => {
         return res.status(400).send('All fields are required');
     }
 
-    // Read current data from database.json
-    fs.readFile(dbFilePath, (err, data) => {
+    // Check if the email or username already exists in the database
+    db.query('SELECT * FROM users WHERE Email = ? OR Username = ?', [email, username], (err, results) => {
         if (err) {
-            console.error('Error reading database:', err);
+            console.error('Error querying the database:', err);
             return res.status(500).send('Server error');
         }
 
-        let users = JSON.parse(data);
-        const newUserID = users.length > 0 ? users[users.length - 1].userID + 1 : 1;
-
-        // Check if the email or username already exists
-        const userExists = users.some(user => user.Email === email || user.Username === username);
-        if (userExists) {
+        if (results.length > 0) {
             return res.status(409).send('User with this email or username already exists');
         }
 
-        // Add the new user
-        const newUser = { Email: email, Username: username, Password: password, userID: newUserID };
-        users.push(newUser);
-
-        // Write updated data back to database.json
-        fs.writeFile(dbFilePath, JSON.stringify(users, null, 4), (err) => {
+        // Insert the new user into the database
+        const newUser = { Email: email, Username: username, Password: password };
+        db.query('INSERT INTO users (Email, Username, Password) VALUES (?, ?, ?)', [email, username, password], (err, results) => {
             if (err) {
-                console.error('Error writing to database:', err);
+                console.error('Error inserting new user:', err);
                 return res.status(500).send('Server error');
             }
 
@@ -62,17 +69,14 @@ app.post('/loginform', (req, res) => {
         return res.status(400).send('All fields are required');
     }
 
-    // Read current data from database.json
-    fs.readFile(dbFilePath, (err, data) => {
+    // Check user credentials against the database
+    db.query('SELECT * FROM users WHERE Username = ? AND Password = ?', [username, password], (err, results) => {
         if (err) {
-            console.error('Error reading database:', err);
+            console.error('Error querying the database:', err);
             return res.status(500).send('Server error');
         }
 
-        const users = JSON.parse(data);
-        const user = users.find(u => u.Username === username && u.Password === password);
-
-        if (user) {
+        if (results.length > 0) {
             res.status(200).send('Login successful');
         } else {
             res.status(401).send('Invalid username or password');
@@ -80,7 +84,7 @@ app.post('/loginform', (req, res) => {
     });
 });
 
-// Catch-all route for 404 errors
+// Catch-all route for 404 errors (if the route is not found)
 app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, '../MyWebpages/404Page.html'));
 });

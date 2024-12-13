@@ -7,6 +7,14 @@
     </head>
 
     <body>
+
+        <div id="preloader">
+            <div class="spinner"></div>
+        </div>
+
+        <div id="main-content">
+
+
         <header>
             <h1>Login</h1>
         </header>
@@ -17,7 +25,6 @@
                 <button class="button button1" onclick="window.location.href='loginpage.html'">Login page</button>
                 <button class="button button1" onclick="window.location.href='registerpage.html'">Register page</button>
                 <button class="button button1" onclick="window.location.href='aboutmepage.html'">About page</button>
-                <button class="button button1" onclick="window.location.href='404Page.html'">404 page</button>
             </nav>
             <article>   
                 <div class="row">
@@ -49,8 +56,20 @@
         </footer>
 
         <script>
+        // loading screen
+        if (performance.navigation.type === 1) {
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    document.body.classList.add('loaded');
+                }, 1000);
+            });
+        } else {
+            document.body.classList.add('loaded');
+        }
+
+            // login form
             document.getElementById('loginForm').addEventListener('submit', (e) => {
-                e.preventDefault(); // Prevent the default form submission
+                e.preventDefault();
         
                 // Collect form data
                 const username = document.getElementById('username').value;
@@ -67,11 +86,12 @@
         
                 if (user) {
                     alert('Login successful');
-                    window.location.href = 'homepage.html'; // Redirect to homepage after successful login
+                    window.location.href = 'homepage.html';
                 } else {
                     alert('Invalid username or password');
                 }
             });
         </script>
+        </div>
     </body>
 </html>

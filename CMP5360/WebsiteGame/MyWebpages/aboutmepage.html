@@ -10,6 +10,11 @@
 
 
     <body>
+        <div id="preloader">
+            <div class="spinner"></div>
+        </div>
+
+        <div id="main-content">
         <header>
         <h1>
             About Me!
@@ -22,7 +27,6 @@
                 <button class="button button1" onclick="window.location.href='loginpage.html'">Login page</button>
                 <button class="button button1" onclick="window.location.href='registerpage.html'">Register page</button>
                 <button class="button button1" onclick="window.location.href='aboutmepage.html'">About page</button>
-                <button class="button button1" onclick="window.location.href='404Page.html'">404 page</button>
 
                 
             </nav>
@@ -88,7 +92,19 @@
             <p>© 2023-2024 Tamer Hussen Birmingham City University</p>
         </footer>
 
+        <script>
+        // loading screen
+        if (performance.navigation.type === 1) {
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    document.body.classList.add('loaded');
+                }, 1000);
+            });
+        } else {
+            document.body.classList.add('loaded');
+        }
+        </script>
 
-
+</div>
     </body>
 </html>
