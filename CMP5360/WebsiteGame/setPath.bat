@@ -1,9 +1,9 @@
 @echo off
-REM 
-cd /d "%~dp0"
+REM
+set SCRIPT_DIR=%~dp0
 
-REM 
-set PATH=C:\nodejs;%PATH%
+REM
+set PATH=%SCRIPT_DIR%nodejs;%PATH%
 
-REM 
+REM
 cmd.exe /K

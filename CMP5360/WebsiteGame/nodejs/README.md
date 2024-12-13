@@ -357,6 +357,8 @@ For information about the governance of the Node.js project, see
   **Jacob Smith** <<jacob@frende.me>> (he/him)
 * [jasnell](https://github.com/jasnell) -
   **James M Snell** <<jasnell@gmail.com>> (he/him)
+* [jazelly](https://github.com/jazelly) -
+  **Jason Zhang** <<xzha4350@gmail.com>> (he/him)
 * [jkrems](https://github.com/jkrems) -
   **Jan Krems** <<jan.krems@gmail.com>> (he/him)
 * [joyeecheung](https://github.com/joyeecheung) -
@@ -377,6 +379,8 @@ For information about the governance of the Node.js project, see
   **Nitzan Uziely** <<linkgoron@gmail.com>>
 * [LiviaMedeiros](https://github.com/LiviaMedeiros) -
   **LiviaMedeiros** <<livia@cirno.name>>
+* [ljharb](https://github.com/ljharb) -
+  **Jordan Harband** <<ljharb@gmail.com>>
 * [lpinca](https://github.com/lpinca) -
   **Luigi Pinca** <<luigipinca@gmail.com>> (he/him)
 * [lukekarrys](https://github.com/lukekarrys) -
@@ -407,7 +411,7 @@ For information about the governance of the Node.js project, see
   **Filip Skokan** <<panva.ip@gmail.com>> (he/him)
 * [pimterry](https://github.com/pimterry) -
   **Tim Perry** <<pimterry@gmail.com>> (he/him)
-* [pmarchini](https://github.com/pmarchini)
+* [pmarchini](https://github.com/pmarchini) -
   **Pietro Marchini** <<pietro.marchini94@gmail.com>> (he/him)
 * [Qard](https://github.com/Qard) -
   **Stephen Belanger** <<admin@stephenbelanger.com>> (he/him)
@@ -513,7 +517,7 @@ For information about the governance of the Node.js project, see
   **Hitesh Kanwathirtha** <<digitalinfinity@gmail.com>> (he/him)
 * [dmabupt](https://github.com/dmabupt) -
   **Xu Meng** <<dmabupt@gmail.com>> (he/him)
-* [dnlup](https://github.com/dnlup)
+* [dnlup](https://github.com/dnlup) -
   **dnlup** <<dnlup.dev@gmail.com>>
 * [eljefedelrodeodeljefe](https://github.com/eljefedelrodeodeljefe) -
   **Robert Jefe Lindstaedt** <<robert.lindstaedt@gmail.com>>
@@ -755,8 +759,6 @@ maintaining the Node.js project.
   **Mert Can Altin** <<mertgold60@gmail.com>>
 * [preveen-stack](https://github.com/preveen-stack) -
   **Preveen Padmanabhan** <<wide4head@gmail.com>> (he/him)
-* [RedYetiDev](https://github.com/redyetidev) -
-  **Aviv Keller** <<redyetidev@gmail.com>> (they/them)
 * [VoltrexKeyva](https://github.com/VoltrexKeyva) -
   **Mohammed Keyvanzadeh** <<mohammadkeyvanzade94@gmail.com>> (he/him)
 
@@ -875,7 +877,7 @@ releases on a rotation basis as outlined in the
 ## License
 
 Node.js is available under the
-[MIT license](https://opensource.org/licenses/MIT). Node.js also includes
+[MIT License](https://opensource.org/licenses/MIT). Node.js also includes
 external libraries that are available under a variety of licenses.  See
 [LICENSE](https://github.com/nodejs/node/blob/HEAD/LICENSE) for the full
 license text.

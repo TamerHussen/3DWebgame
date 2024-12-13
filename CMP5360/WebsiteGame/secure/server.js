@@ -1,100 +1,120 @@
-// Import required modules
 const express = require('express');
-const fs = require('fs');
 const path = require('path');
-
+const mysql = require('mysql');
+const bodyParser = require('body-parser');
+const bcrypt = require('bcrypt');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = 3000;
 
-// Middleware to parse JSON
-app.use(express.json());
-
-// Path to the JSON file
-const dbFilePath = path.join(__dirname, 'database.json');
-
-// Ensure the database.json file exists
-if (!fs.existsSync(dbFilePath)) {
-    fs.writeFileSync(dbFilePath, JSON.stringify([], null, 4));
-    console.log('database.json created as it was missing.');
-}
-
-// Serve static files from the MyWebpages directory
-app.use(express.static(path.join(__dirname, '../MyWebpages')));
-
-// Route to handle user registration
-app.post('/registerform', (req, res) => {
-    const { username, email, password } = req.body;
-
-    // Validate required fields
-    if (!username || !email || !password) {
-        return res.status(400).json({ error: 'All fields are required' });
-    }
-
-    // Read current data from database.json
-    fs.readFile(dbFilePath, 'utf8', (err, data) => {
-        if (err) {
-            console.error('Error reading database:', err);
-            return res.status(500).json({ error: 'Server error' });
-        }
-
-        let users = JSON.parse(data || '[]'); // Default to empty array if file is empty
-        const newUserID = users.length > 0 ? users[users.length - 1].userID + 1 : 1;
-
-        // Check if the email or username already exists
-        const userExists = users.some(user => user.Email === email || user.Username === username);
-        if (userExists) {
-            return res.status(409).json({ error: 'User with this email or username already exists' });
-        }
-
-        // Add the new user
-        const newUser = { Email: email, Username: username, Password: password, userID: newUserID };
-        users.push(newUser);
-
-        // Write updated data back to database.json
-        fs.writeFile(dbFilePath, JSON.stringify(users, null, 4), (err) => {
-            if (err) {
-                console.error('Error writing to database:', err);
-                return res.status(500).json({ error: 'Server error' });
-            }
-
-            res.status(201).json({ message: 'User registered successfully' });
-        });
-    });
+const con = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "",
+  database: "thu_database"
 });
 
-// Route to handle user login
-app.post('/loginform', (req, res) => {
-    const { username, password } = req.body;
-
-    // Validate required fields
-    if (!username || !password) {
-        return res.status(400).json({ error: 'All fields are required' });
-    }
-
-    // Read current data from database.json
-    fs.readFile(dbFilePath, 'utf8', (err, data) => {
-        if (err) {
-            console.error('Error reading database:', err);
-            return res.status(500).json({ error: 'Server error' });
-        }
-
-        const users = JSON.parse(data || '[]');
-        const user = users.find(u => u.Username === username && u.Password === password);
-
-        if (user) {
-            res.status(200).json({ message: 'Login successful' });
-        } else {
-            res.status(401).json({ error: 'Invalid username or password' });
-        }
-    });
+con.connect((err) => {
+  if (err) {
+    console.error("Database connection failed: ", err.message);
+    process.exit(1);
+  }
+  console.log("Connected to MySQL!");
 });
 
-// Catch-all route for 404 errors
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+const webpagesPath = path.resolve(__dirname, '../MyWebpages');
+app.use(express.static(webpagesPath));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(webpagesPath, 'homepage.html'));
+});
+
+app.get('/about', (req, res) => {
+  res.sendFile(path.join(webpagesPath, 'aboutmepage.html'));
+});
+
+app.get('/game', (req, res) => {
+  res.sendFile(path.join(webpagesPath, 'gamepage.html'));
+});
+
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(webpagesPath, 'loginpage.html'));
+});
+
+app.get('/register', (req, res) => {
+  res.sendFile(path.join(webpagesPath, 'registerpage.html'));
+});
+
 app.use((req, res) => {
-    res.status(404).sendFile(path.join(__dirname, '../MyWebpages/404Page.html'));
+  res.status(404).sendFile(path.join(webpagesPath, '404Page.html'));
 });
 
-// Start the server
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
 });
+
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).send("Username and password are required.");
+  }
+
+  con.query(
+    "SELECT * FROM users WHERE username = ?",
+    [username],
+    (err, results) => {
+      if (err) {
+        return res.status(500).send("Database error.");
+      }
+
+      if (results.length === 0) {
+        return res.status(401).send("Invalid credentials.");
+      }
+
+      const user = results[0];
+
+      bcrypt.compare(password, user.password, (err, isMatch) => {
+        if (err) {
+          return res.status(500).send("Error verifying password.");
+        }
+        if (isMatch) {
+          res.send("Login successful");
+        } else {
+          res.status(401).send("Invalid credentials.");
+        }
+      });
+    }
+  );
+});
+
+app.post('/register', (req, res) => {
+    const { username, password, email } = req.body;
+  
+    if (!username || !password || !email) {
+      return res.status(400).send("All fields are required.");
+    }
+  
+    bcrypt.hash(password, 10, (err, hash) => {
+      if (err) {
+        return res.status(500).send("Error encrypting password.");
+      }
+  
+      con.query(
+        "INSERT INTO users (username, password, email) VALUES (?, ?, ?)",
+        [username, hash, email],
+        (err, results) => {
+          if (err) {
+            if (err.code === 'ER_DUP_ENTRY') {
+              return res.status(409).send("Username or email already exists.");
+            }
+            return res.status(500).send("Database error.");
+          }
+  
+          res.redirect('/loginpage.html');
+        }
+      );
+    });
+  });

@@ -38,7 +38,11 @@ release.
   <th title="LTS Until 2025-04"><a href="doc/changelogs/CHANGELOG_V18.md">18</a> (LTS)</th>
 </tr>
 <tr>
-<b><a href="doc/changelogs/CHANGELOG_V23.md#23.1.0">23.1.0</a></b><br/>
+  <td valign="top">
+<b><a href="doc/changelogs/CHANGELOG_V23.md#23.4.0">23.4.0</a></b><br/>
+<a href="doc/changelogs/CHANGELOG_V23.md#23.3.0">23.3.0</a><br/>
+<a href="doc/changelogs/CHANGELOG_V23.md#23.2.0">23.2.0</a><br/>
+<a href="doc/changelogs/CHANGELOG_V23.md#23.1.0">23.1.0</a><br/>
 <a href="doc/changelogs/CHANGELOG_V23.md#23.0.0">23.0.0</a><br/>
   </td>
   <td valign="top">
