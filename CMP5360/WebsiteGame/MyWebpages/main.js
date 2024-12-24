@@ -7,7 +7,6 @@ import { GLTFLoader } from 'https://unpkg.com/three@0.169.0/examples/jsm/loaders
 let isAnimating = false; 
 
 // HTML Elements
-const loadingScreen = document.getElementById('loadingScreen');
 const startMenu = document.getElementById('startMenu');
 const gameOverScreen = document.getElementById('gameOverScreen');
 const startButton = document.getElementById('startButton');
@@ -39,7 +38,7 @@ let assetsLoaded = 0;
 const checkLoadingComplete = () => {
     assetsLoaded++;
     if (assetsLoaded >= assetsToLoad) {
-        loadingScreen.style.display = 'none';
+
     }
 };
 
@@ -254,7 +253,6 @@ const animate = () => {
 // Start Button Handler
 startButton.addEventListener('click', () => {
     startMenu.style.display = 'none';
-    loadingScreen.style.display = 'none';
     gameOverScreen.style.display = 'none';
     startTime = Date.now();
     speed = 0;
@@ -269,7 +267,6 @@ startButton.addEventListener('click', () => {
 restartButton.addEventListener('click', () => {
 
     startMenu.style.display = 'none';
-    loadingScreen.style.display = 'none';
     gameOverScreen.style.display = 'none';
 
     startTime = Date.now();
