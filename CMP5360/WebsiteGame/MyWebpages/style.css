@@ -43,7 +43,6 @@ article{
     padding: 0px;
     color: white;
     margin: 0;
-    background-color: rgba(0, 0, 0, 0.5);
 }
 
 footer{
@@ -51,7 +50,7 @@ footer{
     padding: 0px;
     text-align: center;
     color: white;
-    position: relative;
+    position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
@@ -82,7 +81,7 @@ section::after{
 .column1{
     margin: auto;
     height: auto;
-    width: 45%;
+    width: 75%;
     border: 1px solid rgb(0, 247, 255);
 }
 
@@ -91,14 +90,16 @@ section::after{
 }
 
 .column3{
-    margin-left: 55%;
+    float: right;
+    margin: 5%;
     width: 40%;
+    height: 100%;
     height: auto;
 }
 
 .column4{
     float: left;
-    margin-left: 5%;
+    margin: 5%;
     width: 40%;
     height: 100%;
     display: flex;

@@ -55,6 +55,45 @@ app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
 
+app.post('/register', (req, res) => {
+  console.log("Register request received:", req.body);
+
+  const { Email, Username, Password } = req.body;
+
+  if (!Email || !Username || !Password) {
+    console.log("Missing fields detected.");
+    return res.status(400).send("All fields are required.");
+  }
+
+  bcrypt.hash(Password, 10, (err, hash) => {
+    if (err) {
+      console.error("Error hashing password:", err);
+      return res.status(500).send("Error encrypting password.");
+    }
+
+    console.log("Password hashed successfully:", hash);
+
+    const sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
+    console.log("Executing SQL query:", sql);
+
+    con.query(sql, [Username, hash, Email], (err, results) => {
+      if (err) {
+        console.error("Database query error:", err);
+
+        if (err.code === 'ER_DUP_ENTRY') {
+          return res.status(409).send("Username or email already exists.");
+        }
+
+        return res.status(500).send("Database error.");
+      }
+
+      console.log("User registered successfully:", results);
+      return res.redirect('/login');
+    });
+  });
+});
+
+
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
@@ -62,59 +101,28 @@ app.post('/login', (req, res) => {
     return res.status(400).send("Username and password are required.");
   }
 
-  con.query(
-    "SELECT * FROM users WHERE username = ?",
-    [username],
-    (err, results) => {
-      if (err) {
-        return res.status(500).send("Database error.");
-      }
-
-      if (results.length === 0) {
-        return res.status(401).send("Invalid credentials.");
-      }
-
-      const user = results[0];
-
-      bcrypt.compare(password, user.password, (err, isMatch) => {
-        if (err) {
-          return res.status(500).send("Error verifying password.");
-        }
-        if (isMatch) {
-          res.send("Login successful");
-        } else {
-          res.status(401).send("Invalid credentials.");
-        }
-      });
+  const sql = "SELECT * FROM users WHERE username = ?";
+  con.query(sql, [username], (err, results) => {
+    if (err) {
+      return res.status(500).send("Database error.");
     }
-  );
-});
 
-app.post('/register', (req, res) => {
-    const { username, password, email } = req.body;
-  
-    if (!username || !password || !email) {
-      return res.status(400).send("All fields are required.");
+    if (results.length === 0) {
+      return res.status(401).send("Invalid username or password.");
     }
-  
-    bcrypt.hash(password, 10, (err, hash) => {
+
+    const user = results[0];
+    bcrypt.compare(password, user.password, (err, isMatch) => {
       if (err) {
-        return res.status(500).send("Error encrypting password.");
+        return res.status(500).send("Error verifying password.");
       }
-  
-      con.query(
-        "INSERT INTO users (username, password, email) VALUES (?, ?, ?)",
-        [username, hash, email],
-        (err, results) => {
-          if (err) {
-            if (err.code === 'ER_DUP_ENTRY') {
-              return res.status(409).send("Username or email already exists.");
-            }
-            return res.status(500).send("Database error.");
-          }
-  
-          res.redirect('/loginpage.html');
-        }
-      );
+
+      if (isMatch) {
+        res.send("Login successful");
+      } else {
+        res.status(401).send("Invalid username or password.");
+      }
     });
   });
+});
+

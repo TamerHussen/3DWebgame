@@ -33,22 +33,24 @@
                         <header style="background-color: rgba(17, 11, 33, 0.5)">
                             <p1 style="font-size: 45px;"><div>Enter Login</div></p1>
                         </header>
-                        <form id="loginForm" method="POST" action="/login">
+                        <form action="/login" method="POST">
                             <br>
-                            <p1 style="font-size: 40px;"><label for="username">Username:</label></p1>
-                            <p1 style="font-size: 40px;">
-                                <input style="height: 25px; margin-left: 10px; position: relative; top: -6px;" 
-                                    type="text" id="username" name="username" required>
-                            </p1><br><br>
+                            <p1 style="font-size: 40px;"><label for="Username">Username:</label></p1>
+                            <input
+                                style="height: 25px; margin-left: 10px; position: relative; top: -6px;"
+                                type="text" id="username" name="Username" placeholder="Username" required>
+                            <br>
                             <p1 style="font-size: 40px;"><label for="password">Password:</label></p1>
-                            <p1 style="font-size: 40px;">
-                                <input style="height: 25px; margin-left: 10px; position: relative; top: -6px;" 
-                                    type="password" id="password" name="password" required>
-                            </p1><br><br>
-                            <input style="font-size: 20px; height: 50px; width: 100px;" type="submit" value="Submit">
+                            <input
+                                style="height: 25px; margin-left: 10px; position: relative; top: -6px;"
+                                type="password" id="password" name="Password" placeholder="Password" required>
+                            <br>
+                            <button style="font-size: 20px; height: 50px; width: 100px;"
+                                type="submit">Login</button>
                         </form> 
                     </div>
                 </div>
+                <br>
             </article>
         </section>
         <footer>
@@ -56,7 +58,6 @@
         </footer>
 
         <script>
-        // loading screen
         if (performance.navigation.type === 1) {
             window.addEventListener('load', () => {
                 setTimeout(() => {
@@ -66,31 +67,6 @@
         } else {
             document.body.classList.add('loaded');
         }
-
-            // login form
-            document.getElementById('loginForm').addEventListener('submit', (e) => {
-                e.preventDefault();
-        
-                // Collect form data
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-        
-                if (!username || !password) {
-                    alert('All fields are required');
-                    return;
-                }
-        
-                // Get users from localStorage
-                let users = JSON.parse(localStorage.getItem('users')) || [];
-                const user = users.find(u => u.Username === username && u.Password === password);
-        
-                if (user) {
-                    alert('Login successful');
-                    window.location.href = 'homepage.html';
-                } else {
-                    alert('Invalid username or password');
-                }
-            });
         </script>
         </div>
     </body>
