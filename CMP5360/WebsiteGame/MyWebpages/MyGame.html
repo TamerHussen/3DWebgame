@@ -6,16 +6,14 @@
     <title>SpeedScape</title>
     <link href="style.css" rel="stylesheet" type="text/css" />
     <style>
-        body {
+    body {
             margin: 0;
             overflow: hidden;
             font-family: Arial, sans-serif;
-        }
+    }
 
-        #startMenu, #gameOverScreen {
+    #startMenu {
             position: fixed;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
             background: #171133;
@@ -26,22 +24,39 @@
             align-items: center;
             flex-direction: column;
             z-index: 1000;
-            font-size: 48px;
-        }
+            font-size: auto;
+    }
 
-        #startMenu h1, #gameOverScreen h1 {
+    #gameOverScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgb(23, 17, 51, 0.5);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1000;
+            font-size: 48px;
+    }
+
+    #startMenu h1, #gameOverScreen h1 {
             margin-bottom: 20px;
             font-size: 48px;
-        }
+    }
 
-        #gameOverScreen {
+    #gameOverScreen {
             display: none;
-        }
+    }
 
-        #gameOverScreen p {
+    #gameOverScreen p {
             font-size: 24px;
             margin-bottom: 30px;
-        }
+    }
+
     </style>
 </head>
 <body>
@@ -59,7 +74,7 @@
         <button class="button button4" onclick="location.reload()">MainMenu</button>
     </div>
 
-    <button class="button button2" onclick="window.location.href='homepage.html'">Home page</button>
+    <button class="button button2" onclick="window.location.href='homepage.html'">Home page</button> 
 
     <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
     <script type="importmap"> 
