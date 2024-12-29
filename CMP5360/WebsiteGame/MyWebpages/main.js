@@ -8,6 +8,10 @@ let isAnimating = false;
 
 let enemyModel1;
 
+let obstacle1, obstacle2;
+
+let healModel;
+
 // HTML Elements
 const startMenu = document.getElementById('startMenu');
 const gameOverScreen = document.getElementById('gameOverScreen');
@@ -60,8 +64,45 @@ adjustGraphicsForDevice();
 
 
 // Lighting
-const light = new THREE.DirectionalLight(0xffffff, 0.5);
-scene.add(light);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(10, 20, 10);
+directionalLight.castShadow = true;
+scene.add(directionalLight);
+
+// Audio files
+const listener = new THREE.AudioListener();
+camera.add(listener);
+
+const drivingSound = new THREE.Audio(listener);
+const crashSound = new THREE.Audio(listener);
+const pickupSound = new THREE.Audio(listener);
+const backgroundMusic = new THREE.Audio(listener);
+
+const audioLoader = new THREE.AudioLoader();
+audioLoader.load('resources/audio/driving.wav', (buffer) => {
+    drivingSound.setBuffer(buffer);
+    drivingSound.setLoop(true);
+    drivingSound.setVolume(0.15);
+});
+audioLoader.load('resources/audio/crash.mp4', (buffer) => {
+    crashSound.setBuffer(buffer);
+    crashSound.setLoop(false);
+    crashSound.setVolume(0.7);
+});
+audioLoader.load('resources/audio/pickup.mp4', (buffer) => {
+    pickupSound.setBuffer(buffer);
+    pickupSound.setLoop(false);
+    pickupSound.setVolume(0.7);
+});
+audioLoader.load('resources/audio/background.mp3', (buffer) => {
+    backgroundMusic.setBuffer(buffer);
+    backgroundMusic.setLoop(true);
+    backgroundMusic.setVolume(0.3);
+});
+
 
 // Event Listeners
 window.addEventListener('resize', () => {
@@ -136,7 +177,8 @@ createBoundary(-10);
 createBoundary(10);
 
 // Obstacles
-const obstacleGeometry = new THREE.BoxGeometry(1.5, 1, 2);
+const obstacleGeometry = new THREE.BoxGeometry(3, 1, 3);
+const EnemyGeometry = new THREE.BoxGeometry(3, 1, 3);
 const orangeMaterial = new THREE.MeshBasicMaterial({ color: 0xff9900 });
 const redMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 const blackMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
@@ -144,6 +186,16 @@ const blackMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
 const orangeCubes = [];
 const redCubes = [];
 const blackCubes = [];
+
+const makeMaterialTransparent = (material) => {
+    material.transparent = true;
+    material.opacity = 0;
+};
+
+makeMaterialTransparent(orangeMaterial);
+makeMaterialTransparent(redMaterial);
+makeMaterialTransparent(blackMaterial);
+
 
 const generateObstacles = (cubes, material, count) => {
     for (let i = 0; i < count; i++) {
@@ -158,13 +210,9 @@ const generateObstacles = (cubes, material, count) => {
     }
 };
 
-// Generate initial obstacles
-generateObstacles(orangeCubes, orangeMaterial, 1);
-generateObstacles(redCubes, redMaterial, 1);
-
 const generateBlackObstacles = (cubes, material, count) => {
     for (let i = 0; i < count; i++) {
-        const cube = new THREE.Mesh(obstacleGeometry, material);
+        const cube = new THREE.Mesh(EnemyGeometry, material);
         cube.position.set((Math.random() * 16) - 8, 0.5, -Math.random() * 500);
         scene.add(cube);
         cubes.push(cube);
@@ -177,8 +225,10 @@ const generateBlackObstacles = (cubes, material, count) => {
     }
 };
 
-generateBlackObstacles(blackCubes, blackMaterial, 1);
-
+// Generate obstacles
+generateObstacles(orangeCubes, orangeMaterial, 1.5);
+generateObstacles(redCubes, redMaterial, 1.5);
+generateBlackObstacles(blackCubes, blackMaterial, 1.5);
 
 let elapsedTime = 0;
 const spawnRate = 10000;
@@ -202,8 +252,17 @@ const moveCubes = (cubes, material) => {
     }
 };
 
+// Cube Effects
 const handleCollision = (cube, type) => {
     if (type === 'red') {
+        crashSound.play();
+
+        const originalSpeed = speed;
+        speed = 0;
+        setTimeout(() => {
+            speed = originalSpeed;
+        }, 1500);
+
         health -= 1;
         if (health <= 0) {
             triggerGameOver();
@@ -211,12 +270,14 @@ const handleCollision = (cube, type) => {
             cube.position.z = -500;
         }
     } else if (type === 'orange') {
+        pickupSound.play();
         if (health < maxHealth) {
             health += 1;
             updateHealthBar();
         }
         cube.position.z = -500;
     } else if (type === 'black') {
+        crashSound.play();
         triggerGameOver();
     }
     updateHealthBar();
@@ -231,6 +292,7 @@ loader.load(
         car = gltf.scene;
         car.scale.set(3, 3, 3);
         car.position.y = 0.25;
+        car.rotation.y = 0;
         scene.add(car);
 
         mixer = new THREE.AnimationMixer(car);
@@ -246,13 +308,72 @@ loader.load(
     'resources/3dmodel/Enemy1.glb',
     (gltf) => {
         enemyModel1 = gltf.scene;
-        enemyModel1.scale.set(5, 5, 5); 
+        enemyModel1.scale.set(4, 4, 4); 
         enemyModel1.rotation.y = Math.PI;
         console.log("Enemy model loaded");
     },
     undefined,
     (error) => console.error('Error loading enemy model:', error)
 );
+
+// Orange Cube Model
+loader.load(
+    'resources/3dmodel/Heal.glb',
+    (gltf) => {
+        healModel = gltf.scene;
+        healModel.scale.set(3, 3, 3);
+        console.log("heal model loaded");
+    },
+    undefined,
+    (error) => console.error('Error loading heal model:', error)
+);
+
+// Red Cube Obstacle Model 1
+loader.load(
+    'resources/3dmodel/Cone.glb',
+    (gltf) => {
+        obstacle1 = gltf.scene;
+        obstacle1.scale.set(4, 4, 4);
+        console.log("Obstacle Model 1 loaded");
+        updateRedCubes();
+    },
+    undefined,
+    (error) => console.error('Error loading Obstacle model 1:', error)
+);
+
+// Red Cube Obstacle Model 2
+loader.load(
+    'resources/3dmodel/Bar.glb',
+    (gltf) => {
+        obstacle2 = gltf.scene;
+        obstacle2.scale.set(5, 5, 5);
+        obstacle2.rotation.y = Math.PI / 2;
+        console.log("Obstacle Model 2 loaded");
+        updateRedCubes();
+    },
+    undefined,
+    (error) => console.error('Error loading Obstacle model 2:', error)
+);
+
+const updateRedCubes = () => {
+    redCubes.forEach((cube) => {
+        if (cube.children.length === 0) {
+            const selectedModel = getRandomModel();
+            if (selectedModel) {
+                const modelClone = selectedModel.clone();
+                modelClone.position.set(0, 0, 0);
+                cube.add(modelClone);
+            }
+        }
+    });
+};
+
+// Choose Random Model for Red Cube
+const getRandomModel = () => {
+    const models = [obstacle1, obstacle2];
+    return models[Math.floor(Math.random() * models.length)];
+};
+
 
 // Gameplay Variables
 let speed = 0, score = 0, startTime = Date.now();
@@ -366,6 +487,10 @@ const updateUI = () => {
 const moveCar = () => {
     if (!car) return;
 
+    if (!drivingSound.isPlaying && speed > 0.1) {
+        drivingSound.play();
+    }
+
     const elapsedTimeInSeconds = (Date.now() - startTime) / 1000;
     speedScale = 1 + elapsedTimeInSeconds * 0.05;
     const adjustedMaxSpeed = maxSpeed * speedScale;
@@ -381,17 +506,17 @@ const moveCar = () => {
 
     // Collision detection
     redCubes.forEach((cube) => {
-        if (car.position.distanceTo(cube.position) < 1.5) {
+        if (car.position.distanceTo(cube.position) < 3) {
             handleCollision(cube, 'red');
         }
     });
     orangeCubes.forEach((cube) => {
-        if (car.position.distanceTo(cube.position) < 1.5) {
+        if (car.position.distanceTo(cube.position) < 3) {
             handleCollision(cube, 'orange');
         }
     });
     blackCubes.forEach((cube) => {
-        if (car.position.distanceTo(cube.position) < 1.5) {
+        if (car.position.distanceTo(cube.position) < 3) {
             handleCollision(cube, 'black');
         }
     });
@@ -408,6 +533,9 @@ const moveCar = () => {
 const triggerGameOver = () => {
     cancelAnimationFrame(animate);
     isAnimating = false;
+    
+    drivingSound.stop();
+    backgroundMusic.stop();
 
     gameOverScreen.style.display = 'flex';
 
@@ -425,10 +553,60 @@ const animate = () => {
     requestAnimationFrame(animate);
 
     if (mixer) mixer.update(delta);
+
+    blackCubes.forEach((cube) => {
+        cube.position.z += speed;
+        if (cube.position.z > 5) {
+            cube.position.z = -500;
+            cube.position.x = (Math.random() * 16) - 8;
+        }
+    });
+
+    blackCubes.forEach((cube) => {
+        if (cube.children.length === 0 && enemyModel1) {
+            const enemyClone = enemyModel1.clone();
+            enemyClone.position.set(0, 0, 0);
+            cube.add(enemyClone);
+        }
+    });
+
+    redCubes.forEach((cube) => {
+        cube.position.z += speed;
+        if (cube.position.z > 5) {
+            cube.position.z = -500;
+            cube.position.x = (Math.random() * 16) - 8;
+    
+            cube.children.forEach((child) => cube.remove(child));
+ 
+            const selectedModel = getRandomModel();
+            if (selectedModel) {
+                const modelClone = selectedModel.clone();
+                modelClone.position.set(0, 0, 0);
+                cube.add(modelClone);
+            }
+        }
+    });
+    
+    orangeCubes.forEach((cube) => {
+        cube.position.z += speed;
+        if (cube.position.z > 5) {
+            cube.position.z = -500;
+            cube.position.x = (Math.random() * 16) - 8;
+        }
+    });
+    
+    orangeCubes.forEach((cube) => {
+        if (cube.children.length === 0 && healModel) {
+            const healingClone = healModel.clone();
+            healingClone.position.set(0, 1, 0); 
+            cube.add(healingClone);
+        }
+        cube.children.forEach((child) => {
+            child.rotation.y += 0.05;
+        });
+    });
+    
     moveCar();
-    moveCubes(orangeCubes, orangeMaterial);
-    moveCubes(redCubes, redMaterial);
-    moveCubes(blackCubes, blackMaterial);
     animateRoad();
     updateUI();
 
@@ -436,10 +614,13 @@ const animate = () => {
 };
 
 
+
 // Start Button Handler
 startButton.addEventListener('click', () => {
     startMenu.style.display = 'none';
     gameOverScreen.style.display = 'none';
+
+    backgroundMusic.play();
 
     startCountdown(() => {
         startTime = Date.now();
@@ -456,6 +637,8 @@ restartButton.addEventListener('click', () => {
     startMenu.style.display = 'none';
     gameOverScreen.style.display = 'none';
 
+    backgroundMusic.play();
+
     startCountdown(() => {
         startTime = Date.now();
         speed = 0;
@@ -466,7 +649,6 @@ restartButton.addEventListener('click', () => {
 
         if (car) {
             car.position.set(0, 0.25, 0);
-            car.rotation.y = Math.PI;
         }
 
         [...orangeCubes, ...redCubes, ...blackCubes].forEach((cube) => {
