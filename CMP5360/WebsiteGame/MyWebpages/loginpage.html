@@ -7,6 +7,8 @@
     </head>
 
     <body>
+        <script src="LoginRegister.js"></script>
+
 
         <div id="preloader">
             <div class="spinner"></div>
@@ -33,14 +35,14 @@
                         <header style="background-color: rgba(17, 11, 33, 0.5)">
                             <p1 style="font-size: 45px;"><div>Enter Login</div></p1>
                         </header>
-                        <form action="/login" method="POST">
+                        <form id="loginForm" method="POST" action="/login">
                             <br>
                             <p1 style="font-size: 40px;"><label for="Username">Username:</label></p1>
                             <input
                                 style="height: 25px; margin-left: 10px; position: relative; top: -6px;"
                                 type="text" id="username" name="Username" placeholder="Username" required>
                             <br>
-                            <p1 style="font-size: 40px;"><label for="password">Password:</label></p1>
+                            <p1 style="font-size: 40px;"><label for="Password">Password:</label></p1>
                             <input
                                 style="height: 25px; margin-left: 10px; position: relative; top: -6px;"
                                 type="password" id="password" name="Password" placeholder="Password" required>
@@ -58,15 +60,42 @@
         </footer>
 
         <script>
-        if (performance.navigation.type === 1) {
-            window.addEventListener('load', () => {
-                setTimeout(() => {
+            document.addEventListener("DOMContentLoaded", () => {
+                const loginForm = document.getElementById('loginForm');
+
+                loginForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const formData = new FormData(loginForm);
+                    const response = await fetch('/login', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        alert(result.message);
+                        window.location.href = '/game';
+                    } else {
+                        const error = await response.text();
+                        alert(`Error: ${error}`);
+                    }
+                });
+
+                document.querySelector('#username').addEventListener('input', (e) => {
+                    e.target.value = e.target.value.toLowerCase();
+                });
+
+                if (performance.navigation.type === 1) {
+                    window.addEventListener('load', () => {
+                        setTimeout(() => {
+                            document.body.classList.add('loaded');
+                        }, 1000);
+                    });
+                } else {
                     document.body.classList.add('loaded');
-                }, 1000);
+                }
             });
-        } else {
-            document.body.classList.add('loaded');
-        }
         </script>
         </div>
     </body>

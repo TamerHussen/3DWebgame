@@ -6,6 +6,8 @@
     <link href="style.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
+    <script src="LoginRegister.js"></script>
+
     <div id="preloader">
         <div class="spinner"></div>
     </div>
@@ -31,9 +33,9 @@
                                 <div>Please Register</div>
                             </p1>
                         </header>
-                        <form action="/register" method="POST">
+                        <form id="registerForm" method="POST" action="/register">
                             <br>
-                            <p1 style="font-size: 40px;"><label for="email">Email:</label></p1>
+                            <p1 style="font-size: 40px;"><label for="Email">Email:</label></p1>
                             <input
                                 style="height: 25px; margin-left: 10px; position: relative; top: -6px;"
                                 type="email" id="email" name="Email" placeholder="Email" required>
@@ -63,15 +65,47 @@
         </footer>
 
         <script>
-            if (performance.navigation.type === 1) {
-                window.addEventListener('load', () => {
-                    setTimeout(() => {
-                        document.body.classList.add('loaded');
-                    }, 1000);
+            document.addEventListener("DOMContentLoaded", () => {
+                const registerForm = document.getElementById('registerForm');
+
+                registerForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const formData = new FormData(registerForm);
+                    const data = Object.fromEntries(formData.entries());
+
+                    const response = await fetch('/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
                 });
-            } else {
-                document.body.classList.add('loaded');
-            }
+
+                if (response.ok) {
+                    alert("Registration successful! Redirecting to login page...");
+                    window.location.href = '/login';
+                } else {
+                    const error = await response.text();
+                    alert(`Error: ${error}`);
+                }
+            });
+
+
+                document.querySelector('#username').addEventListener('input', (e) => {
+                    e.target.value = e.target.value.toLowerCase();
+                });
+
+                if (performance.navigation.type === 1) {
+                    window.addEventListener('load', () => {
+                        setTimeout(() => {
+                            document.body.classList.add('loaded');
+                        }, 1000);
+                    });
+                } else {
+                    document.body.classList.add('loaded');
+                }
+            });
         </script>
     </div>
 </body>

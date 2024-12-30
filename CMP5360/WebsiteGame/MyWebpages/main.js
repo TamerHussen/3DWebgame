@@ -376,7 +376,8 @@ const getRandomModel = () => {
 
 
 // Gameplay Variables
-let speed = 0, score = 0, startTime = Date.now();
+let speed = 0, startTime = Date.now();
+let score = 0;
 const maxSpeed = 10.2, acceleration = 0.01, friction = 0.005;
 
 let speedScale = 1;
@@ -527,6 +528,20 @@ const moveCar = () => {
     camera.lookAt(car.position);
 };
 
+// Save Score
+const saveScore = () => {
+    fetch('/save-score', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ score: Math.floor(score / 5) }),
+    }).then(response => {
+        if (!response.ok) {
+            console.error('Failed to save score');
+        }
+    }).catch(err => console.error('Error:', err));
+};
 
 
 // Gameover trigger
@@ -541,9 +556,9 @@ const triggerGameOver = () => {
 
     const finalScoreElement = document.getElementById('finalScore');
     finalScoreElement.innerText = `${Math.floor(score / 5)}`;
+
+    saveScore();
 };
-
-
 
 // Animation Loop
 const clock = new THREE.Clock();
@@ -613,6 +628,16 @@ const animate = () => {
     renderer.render(scene, camera);
 };
 
+// Load Score
+const loadScore = () => {
+    fetch('/get-score')
+        .then(response => response.json())
+        .then(data => {
+            score = data.score || 0;
+            console.log('Loaded score:', score);
+        })
+        .catch(err => console.error('Error loading score:', err));
+};
 
 
 // Start Button Handler
@@ -621,6 +646,8 @@ startButton.addEventListener('click', () => {
     gameOverScreen.style.display = 'none';
 
     backgroundMusic.play();
+
+    loadScore();
 
     startCountdown(() => {
         startTime = Date.now();

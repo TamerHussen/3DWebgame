@@ -4,6 +4,8 @@ const mysql = require('mysql');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const app = express();
+const session = require('express-session');
+
 const port = 3000;
 
 const con = mysql.createConnection({
@@ -21,6 +23,14 @@ con.connect((err) => {
   console.log("Connected to MySQL!");
 });
 
+app.use(express.json());
+
+app.use(session({
+  secret: 'your_secret_key',
+  resave: false,
+  saveUninitialized: true
+}));
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -36,6 +46,9 @@ app.get('/about', (req, res) => {
 });
 
 app.get('/game', (req, res) => {
+  if (!req.session.userId) {
+    return res.redirect('/login');
+  }
   res.sendFile(path.join(webpagesPath, 'gamepage.html'));
 });
 
@@ -47,12 +60,24 @@ app.get('/register', (req, res) => {
   res.sendFile(path.join(webpagesPath, 'registerpage.html'));
 });
 
-app.use((req, res) => {
-  res.status(404).sendFile(path.join(webpagesPath, '404Page.html'));
-});
+app.get('/get-score', (req, res) => {
+  if (!req.session.userId) {
+      return res.status(401).send("User not logged in.");
+  }
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+  const sql = "SELECT score FROM users WHERE id = ?";
+  con.query(sql, [req.session.userId], (err, results) => {
+      if (err) {
+          console.error("Database error:", err);
+          return res.status(500).send("Database error.");
+      }
+
+      if (results.length === 0) {
+          return res.status(404).send("User not found.");
+      }
+
+      res.json({ score: results[0].score });
+  });
 });
 
 app.post('/register', (req, res) => {
@@ -61,48 +86,42 @@ app.post('/register', (req, res) => {
   const { Email, Username, Password } = req.body;
 
   if (!Email || !Username || !Password) {
-    console.log("Missing fields detected.");
-    return res.status(400).send("All fields are required.");
+      return res.status(400).send("All fields are required.");
   }
 
-  bcrypt.hash(Password, 10, (err, hash) => {
-    if (err) {
-      console.error("Error hashing password:", err);
-      return res.status(500).send("Error encrypting password.");
-    }
+  const normalizedUsername = Username.toLowerCase();
 
-    console.log("Password hashed successfully:", hash);
-
-    const sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
-    console.log("Executing SQL query:", sql);
-
-    con.query(sql, [Username, hash, Email], (err, results) => {
-      if (err) {
-        console.error("Database query error:", err);
-
-        if (err.code === 'ER_DUP_ENTRY') {
-          return res.status(409).send("Username or email already exists.");
-        }
-
-        return res.status(500).send("Database error.");
-      }
-
-      console.log("User registered successfully:", results);
-      return res.redirect('/login');
-    });
-  });
+  bcrypt.hash(Password, 10)
+      .then(hash => {
+          const sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
+          con.query(sql, [normalizedUsername, hash, Email], (err, results) => {
+              if (err) {
+                  if (err.code === 'ER_DUP_ENTRY') {
+                      return res.status(409).send("Username or email already exists.");
+                  }
+                  return res.status(500).send("Database error.");
+              }
+              res.status(200).send("Registration successful!");
+          });
+      })
+      .catch(err => {
+          console.error("Error hashing password:", err);
+          res.status(500).send("An error occurred while encrypting the password.");
+      });
 });
 
 
 app.post('/login', (req, res) => {
-  const { username, password } = req.body;
+  const { Username, Password } = req.body;
 
-  if (!username || !password) {
+  if (!Username || !Password) {
     return res.status(400).send("Username and password are required.");
   }
 
+  const normalizedUsername = Username.toLowerCase();
+
   const sql = "SELECT * FROM users WHERE username = ?";
-  con.query(sql, [username], (err, results) => {
+  con.query(sql, [normalizedUsername], (err, results) => {
     if (err) {
       return res.status(500).send("Database error.");
     }
@@ -112,17 +131,55 @@ app.post('/login', (req, res) => {
     }
 
     const user = results[0];
-    bcrypt.compare(password, user.password, (err, isMatch) => {
-      if (err) {
-        return res.status(500).send("Error verifying password.");
-      }
 
-      if (isMatch) {
-        res.send("Login successful");
-      } else {
-        res.status(401).send("Invalid username or password.");
-      }
-    });
+    bcrypt.compare(Password, user.Password)
+      .then(isMatch => {
+        if (isMatch) {
+          req.session.userId = user.id;
+          res.json({ success: true, message: "Logged in successfully!" });
+        } else {
+          res.status(401).send("Invalid username or password.");
+        }
+      })
+      .catch(err => {
+        console.error("Error verifying password:", err);
+        res.status(500).send("An error occurred during password verification.");
+      });
   });
 });
 
+
+
+
+app.post('/save-score', (req, res) => {
+  const { score } = req.body;
+  if (typeof score === 'undefined') {
+      return res.status(400).send('Score is required');
+  }
+
+  if (!req.session.userId) {
+      return res.status(401).send('User not logged in');
+  }
+
+  const sql = "UPDATE users SET score = ? WHERE id = ?";
+  con.query(sql, [score, req.session.userId], (err, results) => {
+      if (err) {
+          console.error("Database error while saving score:", err);
+          return res.status(500).send('Database error');
+      }
+
+      console.log(`Score ${score} saved for user ${req.session.userId}`);
+      res.status(200).send('Score saved successfully');
+  });
+});
+  
+
+
+
+app.use((req, res) => {
+  res.status(404).sendFile(path.join(webpagesPath, '404Page.html'));
+});
+
+app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
+});
