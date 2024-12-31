@@ -256,3 +256,19 @@ body.loaded #main-content {
     display: flex;
     flex-direction: column;
 }
+
+#leaderboard-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+#leaderboard-table th, #leaderboard-table td {
+    border: 1px solid white;
+    padding: 8px;
+    text-align: left;
+}
+
+#leaderboard-table th {
+    background-color: rgba(11, 75, 134, 0.8);
+    color: white;
+}

@@ -10,8 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (registerForm) {
         registerForm.addEventListener("submit", (e) => {
             const Email = document.querySelector("#email");
-            const Username = document.querySelector("#username");
-            const Password = document.querySelector("#password");
+            const Username = document.querySelector("#register-username");
+            const Password = document.querySelector("#register-password");
 
             if (!Email.value.trim()) {
                 e.preventDefault();
@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else if (!Password.value.trim()) {
                 e.preventDefault();
                 showError(Password, "Password is required.");
-            } else if (Password.value.length < 6) {
+            } else if (Password.value.length < 4) {
                 e.preventDefault();
                 showError(Password, "Password must be at least 6 characters long.");
             }
@@ -31,8 +31,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (loginForm) {
         loginForm.addEventListener("submit", (e) => {
-            const Username = document.querySelector("#loginUsername");
-            const Password = document.querySelector("#loginPassword");
+            const Username = document.querySelector("#login-username");
+            const Password = document.querySelector("#login-password");
 
             if (!Username.value.trim()) {
                 e.preventDefault();

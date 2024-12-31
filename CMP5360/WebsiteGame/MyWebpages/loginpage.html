@@ -37,15 +37,15 @@
                         </header>
                         <form id="loginForm" method="POST" action="/login">
                             <br>
-                            <p1 style="font-size: 40px;"><label for="Username">Username:</label></p1>
+                            <p1 style="font-size: 40px;"><label for="username">Username:</label></p1>
                             <input
                                 style="height: 25px; margin-left: 10px; position: relative; top: -6px;"
-                                type="text" id="username" name="Username" placeholder="Username" required>
+                                type="text" id="login-username" name="Username" placeholder="Username" required>
                             <br>
-                            <p1 style="font-size: 40px;"><label for="Password">Password:</label></p1>
+                            <p1 style="font-size: 40px;"><label for="password">Password:</label></p1>
                             <input
                                 style="height: 25px; margin-left: 10px; position: relative; top: -6px;"
-                                type="password" id="password" name="Password" placeholder="Password" required>
+                                type="password" id="login-password" name="Password" placeholder="Password" required>
                             <br>
                             <button style="font-size: 20px; height: 50px; width: 100px;"
                                 type="submit">Login</button>
@@ -67,14 +67,20 @@
                     e.preventDefault();
 
                     const formData = new FormData(loginForm);
+                    const data = Object.fromEntries(formData.entries());
                     const response = await fetch('/login', {
                         method: 'POST',
-                        body: formData
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
                     });
+
 
                     if (response.ok) {
                         const result = await response.json();
                         alert(result.message);
+                        console.log('Login successful:', result);
                         window.location.href = '/game';
                     } else {
                         const error = await response.text();
@@ -82,7 +88,7 @@
                     }
                 });
 
-                document.querySelector('#username').addEventListener('input', (e) => {
+                document.querySelector('#login-username').addEventListener('input', (e) => {
                     e.target.value = e.target.value.toLowerCase();
                 });
 

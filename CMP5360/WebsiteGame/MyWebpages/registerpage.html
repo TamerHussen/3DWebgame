@@ -43,12 +43,12 @@
                             <p1 style="font-size: 40px;"><label for="Username">Username:</label></p1>
                             <input
                                 style="height: 25px; margin-left: 10px; position: relative; top: -6px;"
-                                type="text" id="username" name="Username" placeholder="Username" required>
+                                type="text" id="register-username" name="Username" placeholder="Username" required>
                             <br>
                             <p1 style="font-size: 40px;"><label for="password">Password:</label></p1>
                             <input
                                 style="height: 25px; margin-left: 10px; position: relative; top: -6px;"
-                                type="password" id="password" name="Password" placeholder="Password" required>
+                                type="password" id="register-password" name="Password" placeholder="Password" required>
                             <br>
                             <button style="font-size: 20px; height: 50px; width: 100px;"
                                 type="submit">Register</button>
@@ -92,7 +92,7 @@
             });
 
 
-                document.querySelector('#username').addEventListener('input', (e) => {
+                document.querySelector('#register-username').addEventListener('input', (e) => {
                     e.target.value = e.target.value.toLowerCase();
                 });
 

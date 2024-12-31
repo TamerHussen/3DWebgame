@@ -7,17 +7,21 @@ import { GLTFLoader } from 'https://unpkg.com/three@0.169.0/examples/jsm/loaders
 let isAnimating = false; 
 
 let enemyModel1;
-
 let obstacle1, obstacle2;
-
 let healModel;
+
+const loader = new GLTFLoader();
 
 // HTML Elements
 const startMenu = document.getElementById('startMenu');
 const gameOverScreen = document.getElementById('gameOverScreen');
 const startButton = document.getElementById('startButton');
 const restartButton = document.getElementById('restartButton');
+const pauseMenu = document.getElementById('pauseMenu');
+const pauseButton = document.getElementById('pauseButton');
+const resumeButton = document.getElementById('resumeButton');
 
+let isPaused = false;
 
 // Scene Setup
 const scene = new THREE.Scene();
@@ -176,6 +180,9 @@ const createBoundary = (x) => {
 createBoundary(-10);
 createBoundary(10);
 
+
+
+
 // Obstacles
 const obstacleGeometry = new THREE.BoxGeometry(3, 1, 3);
 const EnemyGeometry = new THREE.BoxGeometry(3, 1, 3);
@@ -285,7 +292,6 @@ const handleCollision = (cube, type) => {
 
 // Car Model
 let car, mixer;
-const loader = new GLTFLoader();
 loader.load(
     'resources/3dmodel/Car.glb',
     (gltf) => {
@@ -645,8 +651,6 @@ startButton.addEventListener('click', () => {
     startMenu.style.display = 'none';
     gameOverScreen.style.display = 'none';
 
-    backgroundMusic.play();
-
     loadScore();
 
     startCountdown(() => {
@@ -656,6 +660,7 @@ startButton.addEventListener('click', () => {
 
         isAnimating = true;
         animate();
+        backgroundMusic.play();
     });
 });
 
@@ -663,8 +668,6 @@ startButton.addEventListener('click', () => {
 restartButton.addEventListener('click', () => {
     startMenu.style.display = 'none';
     gameOverScreen.style.display = 'none';
-
-    backgroundMusic.play();
 
     startCountdown(() => {
         startTime = Date.now();
@@ -684,8 +687,39 @@ restartButton.addEventListener('click', () => {
 
         isAnimating = true;
         animate();
+
+        backgroundMusic.play();
     });
 });
 
+
+pauseButton.addEventListener('click', () => {
+    isPaused = true;
+    isAnimating = false;
+
+    drivingSound.pause();
+    backgroundMusic.pause();
+
+    pauseButton.style.display = 'none';
+    resumeButton.style.display = 'block';
+    pauseMenu.style.display = 'block';
+});
+
+resumeButton.addEventListener('click', () => {
+    isPaused = false;
+    isAnimating = true;
+
+    resumeButton.style.display = 'none';
+    pauseButton.style.display = 'block';
+    pauseMenu.style.display = 'none';
+
+    startCountdown(() => {
+        isAnimating = true;
+        animate();
+
+        drivingSound.play();
+        backgroundMusic.play();
+    });
+});
 
 
